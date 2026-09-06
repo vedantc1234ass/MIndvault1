@@ -1,0 +1,6 @@
+{
+  "name": "MindVault — Secure Personal AI Second Brain",
+  "description": "Production-grade personal AI second brain with strict per-user Firestore data isolation, multi-turn Gemini conversations, Ask My Journal capability, and Google Cloud Secret Manager security architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

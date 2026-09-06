@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Default deny all unknown collections
+    // Prevents: enumeration and unauthorized writes to unspecified root collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User profile document
+    // Prevents: unauthorized users from reading or spoofing another user's profile
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isOwner(userId) && request.resource.data.uid == userId;
+      allow delete: if false; // Disallow deletion via client SDK
+
+      // Subcollection: Journal Entries
+      // Prevents: Cross-user reads (IDOR), unauthorized modification, ownership tampering, oversized payload attacks
+      match /journalEntries/{entryId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == userId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 200
+          && request.resource.data.content is string
+          && request.resource.data.content.size() <= 50000;
+
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == resource.data.userId // Prevents changing owner UID
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 200
+          && request.resource.data.content is string
+          && request.resource.data.content.size() <= 50000;
+
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: AI Conversations
+      // Prevents: Leaking sensitive reflection history to third parties or tampering with session IDs
+      match /conversations/{conversationId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == userId;
+
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == resource.data.userId;
+
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: AI Summaries
+      // Prevents: Cross-user leakage of aggregated emotional and journal summaries
+      match /summaries/{summaryId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == userId;
+
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == resource.data.userId;
+
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: User Insights & Analytics
+      // Prevents: Cross-user access to personal knowledge analytics
+      match /insights/{insightId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == userId;
+
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == resource.data.userId;
+
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

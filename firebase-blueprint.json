@@ -1,0 +1,63 @@
+{
+  "$schema": "https://raw.githubusercontent.com/firebase/firebase-tools/master/schema/firestore-blueprint.json",
+  "entities": {
+    "users": {
+      "description": "User profile metadata",
+      "fields": {
+        "uid": { "type": "string", "description": "User ID matching auth.uid" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "createdAt": { "type": "string", "description": "Creation ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update ISO timestamp" }
+      },
+      "subcollections": {
+        "journalEntries": {
+          "description": "Private encrypted/isolated journal entries belonging strictly to the user",
+          "fields": {
+            "id": { "type": "string", "description": "Unique entry identifier" },
+            "userId": { "type": "string", "description": "Owner UID matching auth.uid" },
+            "title": { "type": "string", "description": "Entry title (max 200 chars)" },
+            "content": { "type": "string", "description": "Entry text content (max 50,000 chars)" },
+            "mood": { "type": "string", "description": "Optional mood tag (e.g. calm, focused, reflective)" },
+            "tags": { "type": "array", "description": "List of string tags" },
+            "createdAt": { "type": "string", "description": "ISO timestamp" },
+            "updatedAt": { "type": "string", "description": "ISO timestamp" }
+          }
+        },
+        "conversations": {
+          "description": "Private reflective AI conversations scoped to user",
+          "fields": {
+            "id": { "type": "string", "description": "Conversation ID" },
+            "userId": { "type": "string", "description": "Owner UID matching auth.uid" },
+            "title": { "type": "string", "description": "Session topic/title" },
+            "messages": { "type": "array", "description": "Array of message objects {role, content, timestamp}" },
+            "createdAt": { "type": "string", "description": "ISO timestamp" },
+            "updatedAt": { "type": "string", "description": "ISO timestamp" }
+          }
+        },
+        "summaries": {
+          "description": "AI-generated reflections and periodic summaries scoped to user",
+          "fields": {
+            "id": { "type": "string", "description": "Summary ID" },
+            "userId": { "type": "string", "description": "Owner UID matching auth.uid" },
+            "title": { "type": "string", "description": "Title of conversation or summary" },
+            "shortSummary": { "type": "string", "description": "Short summary text" },
+            "keyTopics": { "type": "array", "description": "Identified key topics" },
+            "importantIdeas": { "type": "array", "description": "Important takeaways" },
+            "actionItems": { "type": "array", "description": "Actionable next steps" },
+            "createdAt": { "type": "string", "description": "ISO timestamp" }
+          }
+        },
+        "insights": {
+          "description": "Personal activity metrics and topic insights scoped to user",
+          "fields": {
+            "id": { "type": "string", "description": "Insight document ID" },
+            "userId": { "type": "string", "description": "Owner UID matching auth.uid" },
+            "computedAt": { "type": "string", "description": "ISO timestamp" },
+            "stats": { "type": "object", "description": "Aggregated metrics" }
+          }
+        }
+      }
+    }
+  }
+}
